@@ -33,13 +33,23 @@ class InventoryListCreateView(APIView):
             return Response(serializer.errors, status=400)
 
         serializer.save()
-
         return Response(serializer.data, status=201)
 
     def get(self, request: Request, *args, **kwargs) -> Response:
-        serializer = self.serializer_class(self.get_queryset(), many=True)
+        limit = int(request.GET.get("limit", 3))
+        offset = int(request.GET.get("offset", 0))
 
-        return Response(serializer.data, status=200)
+        full_queryset = self.get_queryset()
+        paginated_qs = full_queryset[offset:offset + limit]
+
+        serializer = self.serializer_class(paginated_qs, many=True)
+        response_data = {
+            "count": full_queryset.count(),
+            "limit": limit,
+            "offset": offset,
+            "results": serializer.data
+        }
+        return Response(response_data, status=200)
 
     def get_queryset(self):
         return self.queryset.all()
