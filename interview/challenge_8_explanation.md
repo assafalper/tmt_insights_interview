@@ -12,7 +12,7 @@ You want to create a new Inventory item using a POST request, and the metadata f
 
 
 Here’s an example of what your JSON payload should look like when making a POST to /inventory/:
-
+```
 {
   "name": "Pulp Fiction",
   "language": 1,
@@ -25,14 +25,16 @@ Here’s an example of what your JSON payload should look like when making a POS
     "film_locations": ["Los Angeles", "Hollywood"]
   }
 }
+```
 
 Make sure:
 
 * language and type are valid existing IDs in your database.
-* metadata must match the expected structure (we’ll define that next).
+* metadata must match the expected structure
 
 You can test using curl like this:
 
+```
 curl -X POST http://localhost:8000/inventory/ \
   -H "Content-Type: application/json" \
   -d '{
@@ -47,3 +49,4 @@ curl -X POST http://localhost:8000/inventory/ \
       "film_locations": ["Los Angeles"]
     }
   }'
+```
