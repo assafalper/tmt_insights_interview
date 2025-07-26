@@ -1,3 +1,7 @@
+import datetime
+from django.utils.dateparse import parse_datetime
+from django.utils.timezone import make_aware, is_naive
+
 from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework.views import APIView
@@ -231,3 +235,30 @@ class InventoryTypeRetrieveUpdateDestroyView(APIView):
 
     def get_queryset(self, **kwargs):
         return self.queryset.get(**kwargs)
+    
+
+class InventoryListAfterGivenDateView(APIView):
+    queryset = Inventory.objects.all()
+    serializer_class = InventorySerializer
+
+    def get(self, request: Request, *args, **kwargs) -> Response:
+        date_str = request.GET.get('date')
+        if date_str:
+            try:
+                ts_date = parse_datetime(date_str)
+                if ts_date is None:
+                    raise ValueError
+                if is_naive(ts_date):
+                    ts_date = make_aware(ts_date)
+            except (ValueError, TypeError):
+                return Response('Invalid Date format. Use ISO 8601 format.', status=400)
+
+            queryset = self.queryset.filter(created_at__gte=ts_date)
+            serializer = self.serializer_class(queryset, many=True)
+        else:
+            serializer = self.serializer_class(self.get_queryset(), many=True)
+
+        return Response(serializer.data, status=200)
+
+    def get_queryset(self):
+        return self.queryset.all()
